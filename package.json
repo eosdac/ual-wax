@@ -1,0 +1,26 @@
+{
+  "name": "ual-wax",
+  "version": "1.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --build tsconfig.json",
+    "clean-build": "rm -rf dist && yarn build"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "eosDAC",
+    "url": "https://eosdac.oi/"
+  },
+  "dependencies": {
+    "@waxio/waxjs": "^0.0.11",
+    "commonjs": "^0.0.1",
+    "eosjs": "20.0.0",
+    "text-encoding": "0.7.0",
+    "typescript": "^3.7.4",
+    "universal-authenticator-library": "0.1.4"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.2.0"
+  }
+}
