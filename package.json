@@ -1,6 +1,6 @@
 {
-  "name": "ual-wax",
-  "version": "1.0.1",
+  "name": "@eosdacio/ual-wax",
+  "version": "1.0.2",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "MIT",
   "author": {
     "name": "eosDAC",
-    "url": "https://eosdac.oi/"
+    "url": "https://eosdac.io/"
   },
   "dependencies": {
     "@waxio/waxjs": "^0.0.11",
