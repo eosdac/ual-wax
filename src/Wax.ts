@@ -1,36 +1,36 @@
-import {
-    Authenticator,
-    Chain,
-    User,
-    UALError,
-} from 'universal-authenticator-library'
-import {WaxUser} from "./WaxUser";
-import {WaxIcon} from './WaxIcon';
-import * as waxjs from "@waxio/waxjs/dist"
+import { Authenticator, Chain, User, UALError } from 'universal-authenticator-library'
+import { WaxJS } from "@waxio/waxjs/dist"
+
+import { WaxUser } from "./WaxUser";
+import { WaxIcon } from './WaxIcon';
+import {UALWaxError} from "./UALWaxError";
+import {UALErrorType} from "universal-authenticator-library/dist";
 
 export class Wax extends Authenticator {
-    private wax?: any = null;
-    public chains: Chain[];
+    private wax?: WaxJS;
     private users: WaxUser[] = [];
-    private pubKeys: [];
-    appName = 'WAX Cloud Wallet';
-    lastError = null;
-    accountName = null;
 
-    constructor(chains: Chain[], options?: Object) {
+    private initiated = false;
+
+    constructor(chains: Chain[], options?: any) {
         super(chains, options);
-
-        const endpoint = `${chains[0].rpcEndpoints[0].protocol}://${chains[0].rpcEndpoints[0].host}:${chains[0].rpcEndpoints[0].port}`;
-        this.wax = new waxjs.WaxJS(endpoint, null, null, false);
-
-        this.chains = chains;
     }
 
     /**
      * Called after `shouldRender` and should be used to handle any async actions required to initialize the authenticator
      */
     async init(): Promise<void> {
-        console.log(`WAX: init`);
+        this.initWaxJS();
+
+        if (this.wax && await this.wax.isAutoLoginAvailable()) {
+            await this.wax.login();
+
+            this.users = [new WaxUser(this.chains[0], this.wax)];
+        }
+
+        this.initiated = true;
+
+        console.log(`UAL-WAX: init`);
     }
 
 
@@ -38,6 +38,9 @@ export class Wax extends Authenticator {
      * Resets the authenticator to its initial, default state then calls `init` method
      */
     reset() {
+        this.wax = undefined;
+        this.users = [];
+        this.initiated = false;
     }
 
 
@@ -45,7 +48,7 @@ export class Wax extends Authenticator {
      * Returns true if the authenticator has errored while initializing.
      */
     isErrored() {
-        return (this.lastError !== null);
+        return false;
     }
 
 
@@ -62,7 +65,7 @@ export class Wax extends Authenticator {
      * Returns error (if available) if the authenticator has errored while initializing.
      */
     getError(): UALError | null {
-        return this.lastError;
+        return null;
     }
 
 
@@ -70,7 +73,7 @@ export class Wax extends Authenticator {
      * Returns true if the authenticator is loading while initializing its internal state.
      */
     isLoading(): boolean {
-        return false;
+        return !this.initiated;
     }
 
 
@@ -102,7 +105,7 @@ export class Wax extends Authenticator {
      * shouldAutoLogin() true.
      */
     shouldAutoLogin() {
-        return true;
+        return false;
     }
 
 
@@ -117,32 +120,36 @@ export class Wax extends Authenticator {
 
     /**
      * Login using the Authenticator App. This can return one or more users depending on multiple chain support.
-     *
-     * @param accountName  The account name of the user for Authenticators that do not store accounts (optional)
      */
     async login(): Promise<User[]> {
+        console.log(`UAL-WAX: login requested`);
+
+        if (this.chains.length > 1 || this.chains[0].chainId !== '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4') {
+            throw new UALWaxError('WAX Could Wallet only supports the WAX Mainnet',
+                UALErrorType.Unsupported, null
+            )
+        }
+
+        if (!this.wax) {
+            throw new UALWaxError('WAX Cloud Wallet not initialized yet',
+                UALErrorType.Initialization, null
+            )
+        }
+
         try {
-            const isAutoLoginAvailable = await this.wax.isAutoLoginAvailable();
-            if (!isAutoLoginAvailable) {
-                this.accountName = await this.wax.login();
-            } else {
-                this.accountName = this.wax.userAccount;
-            }
+            await this.wax.login();
 
-            this.pubKeys = this.wax.pubKeys;
-            for (const chain of this.chains) {
-                const user = new WaxUser(chain, this.accountName, this.pubKeys);
-                this.users.push(user);
-            }
+            this.users = [new WaxUser(this.chains[0], this.wax)]
 
-            console.log(`WAX: users`, this.users);
+            console.log(`UAL-WAX: login`, this.users);
 
             return this.users
         } catch (e) {
-            console.error(`WAX Login error`, e);
+            throw new UALWaxError(
+                e.message ? e.message : 'Could not login to the WAX Cloud Wallet',
+                UALErrorType.Login, e
+            )
         }
-
-        return [];
     }
 
 
@@ -150,18 +157,22 @@ export class Wax extends Authenticator {
      * Logs the user out of the dapp. This will be strongly dependent on each Authenticator app's patterns.
      */
     async logout(): Promise<void> {
+        this.initWaxJS();
         this.users = [];
-        this.pubKeys = [];
+
+        console.log(`UAL-WAX: logout`);
     }
 
 
     /**
      * Returns true if user confirmation is required for `getKeys`
      */
-    requiresGetKeyConfirmation(accountName?: string): boolean {
-        if (!accountName) {
-            return true;
-        }
+    requiresGetKeyConfirmation(): boolean {
         return false;
+    }
+
+    private initWaxJS() {
+        const endpoint = `${this.chains[0].rpcEndpoints[0].protocol}://${this.chains[0].rpcEndpoints[0].host}:${this.chains[0].rpcEndpoints[0].port}`;
+        this.wax = new WaxJS(endpoint, undefined, undefined, false);
     }
 }
