@@ -1,60 +1,75 @@
-import { User, Chain } from 'universal-authenticator-library'
-import * as waxjs from "@waxio/waxjs/dist"
+import {Chain, SignTransactionResponse, User, UALErrorType} from 'universal-authenticator-library'
+import {WaxJS} from "@waxio/waxjs/dist"
+import {UALWaxError} from "./UALWaxError";
 
 export class WaxUser extends User {
-  public accountName: string;
-  private pubKeys: [];
-  private wax: any;
-  private chain: Chain;
+    public readonly accountName: string;
+    public readonly requestPermission: string;
 
-  constructor (chain, accountName, pubKeys) {
-    super();
+    private readonly pubKeys: string[];
+    private readonly wax: WaxJS;
+    private readonly chain: Chain;
 
-    this.accountName = accountName;
-    this.pubKeys = pubKeys;
-    this.chain = chain;
+    private readonly api: any;
+    private readonly rpc: any;
 
-    const endpoint = `${chain.rpcEndpoints[0].protocol}://${chain.rpcEndpoints[0].host}:${chain.rpcEndpoints[0].port}`;
-    this.wax = new waxjs.WaxJS(endpoint, accountName, pubKeys, true);
-  }
+    constructor(chain: Chain, wax: WaxJS) {
+        super();
 
-  /**
-   * @param transaction  The transaction to be signed (a object that matches the RpcAPI structure).
-   */
-  async signTransaction(transaction, _options) {
-    return this.wax.api.transact(transaction, {blocksBehind: 3, expireSeconds: 30});
-  }
+        // @ts-ignore
+        this.accountName = wax.userAccount;
+        // @ts-ignore
+        this.pubKeys = wax.pubKeys;
+        this.requestPermission = 'active';
 
+        this.chain = chain;
+        this.wax = wax;
 
-  /**
-   * @param publicKey   The public key to use for signing.
-   * @param data        The data to be signed.
-   * @param helpText    Help text to explain the need for arbitrary data to be signed.
-   *
-   * @returns           The signature
-   */
-  async signArbitrary(_publicKey, _data, _helpText): Promise<string> {
-    return '';
-  }
+        // compatible features
+        this.api = wax.api;
+        this.rpc = wax.api.rpc;
+    }
 
-  /**
-   * @param challenge   Challenge text sent to the authenticator.
-   *
-   * @returns           Whether the user owns the private keys corresponding with provided public keys.
-   */
-  async verifyKeyOwnership(_: string): Promise<boolean> {
-    return true;
-  }
+    /**
+     * @param transaction  The transaction to be signed (a object that matches the RpcAPI structure).
+     * @param options  Options for tapos fields
+     */
+    async signTransaction(transaction: any, options: any): Promise<SignTransactionResponse> {
+        try {
+            const completedTransaction = await this.wax.api.transact(transaction, options);
 
-  async getAccountName(): Promise<string> {
-    return this.accountName;
-  }
+            return this.returnEosjsTransaction(!!options.broadcast, completedTransaction);
+        } catch (e) {
+            throw new UALWaxError(
+                e.message ? e.message : 'Unable to sign transaction',
+                UALErrorType.Signing, e
+            );
+        }
+    }
 
-  async getChainId(): Promise<string> {
-    return this.chain.chainId;
-  }
+    async signArbitrary(): Promise<string> {
+        throw new UALWaxError(
+            'WAX Cloud Wallet does not currently support signArbitrary',
+            UALErrorType.Unsupported, null
+        );
+    }
 
-  async getKeys() {
-    return this.pubKeys;
-  }
+    async verifyKeyOwnership(): Promise<boolean> {
+      throw new UALWaxError(
+          'WAX Cloud Wallet does not currently support verifyKeyOwnership',
+          UALErrorType.Unsupported, null
+      );
+    }
+
+    async getAccountName(): Promise<string> {
+        return this.accountName;
+    }
+
+    async getChainId(): Promise<string> {
+        return this.chain.chainId;
+    }
+
+    async getKeys() {
+        return this.pubKeys;
+    }
 }
