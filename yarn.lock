@@ -598,10 +598,10 @@ typescript@^3.9.2:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.5.tgz#586f0dba300cde8be52dd1ac4f7e1009c1b13f36"
   integrity sha512-hSAifV3k+i6lEoCJ2k6R2Z/rp/H3+8sdmcn5NrS3/3kE7+RyZXm9aqvxWqjEXHAd8b0pShatpcdMTvEdvAJltQ==
 
-universal-authenticator-library@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/universal-authenticator-library/-/universal-authenticator-library-0.2.0.tgz#6b609e5a3d6c8c2ad209ccc9f06f4bb6be4bc807"
-  integrity sha512-uukf31lXIB/nRaiO/Z1Aag48ZLWtiX3kd05XIz6QWwjuQbprLOzgesGgMeVxQNTCgTDHGxwtE/mzkZ+5R1x8qw==
+universal-authenticator-library@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/universal-authenticator-library/-/universal-authenticator-library-0.3.0.tgz#c9001f1739578fae5b8c32c4d3e754ad681f541a"
+  integrity sha512-G/D9S1/b0fwRHPWHi+bPKjqHb/A5BqiOQ3k/R3MYPQQa0yxStn+Gf3oZjKKFnj9ZhELZ6FHOFRTXzcn/ggxXDg==
 
 util-deprecate@~1.0.1:
   version "1.0.2"
