@@ -171,6 +171,13 @@ export class Wax extends Authenticator {
         return false;
     }
 
+    /**
+     * Returns name of authenticator for persistence in local storage
+     */
+    getName(): string {
+      return 'wax';
+    }
+
     private initWaxJS() {
         const endpoint = `${this.chains[0].rpcEndpoints[0].protocol}://${this.chains[0].rpcEndpoints[0].host}:${this.chains[0].rpcEndpoints[0].port}`;
         this.wax = new WaxJS(endpoint, undefined, undefined, false);

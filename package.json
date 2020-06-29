@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@waxio/waxjs": "^0.0.12",
-    "universal-authenticator-library": "^0.2.0"
+    "universal-authenticator-library": "^0.3.0"
   },
   "devDependencies": {
     "ts-loader": "^7.0.4",
