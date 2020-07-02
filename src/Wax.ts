@@ -22,7 +22,16 @@ export class Wax extends Authenticator {
     async init(): Promise<void> {
         this.initWaxJS();
 
-        this.initiated = true;
+        try {
+            if (this.wax && this.wax.isAutoLoginAvailable()) {
+                // @ts-ignore
+                await this.wax.loginViaEndpoint();
+            }
+        } catch (e) {
+            console.log('UAL-WAX: autologin error', e);
+        } finally {
+            this.initiated = true;
+        }
 
         console.log(`UAL-WAX: init`);
     }
@@ -183,6 +192,6 @@ export class Wax extends Authenticator {
 
     private initWaxJS() {
         const endpoint = `${this.chains[0].rpcEndpoints[0].protocol}://${this.chains[0].rpcEndpoints[0].host}:${this.chains[0].rpcEndpoints[0].port}`;
-        this.wax = new WaxJS(endpoint);
+        this.wax = new WaxJS(endpoint, undefined, undefined, false);
     }
 }
