@@ -29,9 +29,9 @@ export class Wax extends Authenticator {
             }
         } catch (e) {
             console.log('UAL-WAX: autologin error', e);
-        } finally {
-            this.initiated = true;
         }
+
+        this.initiated = true;
 
         console.log(`UAL-WAX: init`);
     }
