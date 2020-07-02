@@ -183,6 +183,6 @@ export class Wax extends Authenticator {
 
     private initWaxJS() {
         const endpoint = `${this.chains[0].rpcEndpoints[0].protocol}://${this.chains[0].rpcEndpoints[0].host}:${this.chains[0].rpcEndpoints[0].port}`;
-        this.wax = new WaxJS(endpoint, undefined, undefined, false);
+        this.wax = new WaxJS(endpoint);
     }
 }
