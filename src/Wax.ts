@@ -23,10 +23,7 @@ export class Wax extends Authenticator {
         this.initWaxJS();
 
         try {
-            if (this.wax && this.wax.isAutoLoginAvailable()) {
-                // @ts-ignore
-                await this.wax.loginViaEndpoint();
-            }
+            this.wax && await this.wax.isAutoLoginAvailable();
         } catch (e) {
             console.log('UAL-WAX: autologin error', e);
         }
