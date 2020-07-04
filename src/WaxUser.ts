@@ -38,7 +38,7 @@ export class WaxUser extends User {
         try {
             const completedTransaction = await this.wax.api.transact(transaction, options);
 
-            return this.returnEosjsTransaction(!!options.broadcast, completedTransaction);
+            return this.returnEosjsTransaction(options.broadcast !== false, completedTransaction);
         } catch (e) {
             throw new UALWaxError(
                 e.message ? e.message : 'Unable to sign transaction',
