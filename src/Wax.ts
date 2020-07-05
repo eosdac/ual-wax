@@ -22,10 +22,10 @@ export class Wax extends Authenticator {
     async init(): Promise<void> {
         this.initWaxJS();
 
-        if (this.wax && await this.wax.isAutoLoginAvailable()) {
-            await this.wax.login();
-
-            this.users = [new WaxUser(this.chains[0], this.wax)];
+        try {
+            this.wax && await this.wax.isAutoLoginAvailable();
+        } catch (e) {
+            console.log('UAL-WAX: autologin error', e);
         }
 
         this.initiated = true;
@@ -117,6 +117,15 @@ export class Wax extends Authenticator {
         return false;
     }
 
+    /**
+     * Returns the amount of seconds after the authentication will be invalid for logging in on new
+     * browser sessions.  Setting this value to zero will cause users to re-attempt authentication on
+     * every new browser session.  Please note that the invalidate time will be saved client-side and
+     * should not be relied on for security.
+     */
+    public shouldInvalidateAfter(): number {
+        return 86400;
+    }
 
     /**
      * Login using the Authenticator App. This can return one or more users depending on multiple chain support.
