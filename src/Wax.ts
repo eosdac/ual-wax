@@ -1,10 +1,11 @@
 import { Authenticator, Chain, User, UALError } from 'universal-authenticator-library'
+import {UALErrorType} from "universal-authenticator-library/dist";
+import {SignatureProvider} from "eosjs/dist/eosjs-api-interfaces";
 import { WaxJS } from "@waxio/waxjs/dist"
 
 import { WaxUser } from "./WaxUser";
 import { WaxIcon } from './WaxIcon';
 import {UALWaxError} from "./UALWaxError";
-import {UALErrorType} from "universal-authenticator-library/dist";
 
 export class Wax extends Authenticator {
     private wax?: WaxJS;
@@ -14,8 +15,12 @@ export class Wax extends Authenticator {
 
     private session?: {userAccount: string, pubKeys: string[]};
 
-    constructor(chains: Chain[], options?: any) {
+    private readonly apiSigner?: SignatureProvider;
+
+    constructor(chains: Chain[], options?: {apiSigner?: SignatureProvider}) {
         super(chains, options);
+
+        this.apiSigner = options && options.apiSigner;
     }
 
     /**
@@ -232,7 +237,7 @@ export class Wax extends Authenticator {
     }
 
     private initWaxJS() {
-        this.wax = new WaxJS(this.getEndpoint(), undefined, undefined, false);
+        this.wax = new WaxJS(this.getEndpoint(), undefined, undefined, false, this.apiSigner);
     }
 
     private getEndpoint() {
