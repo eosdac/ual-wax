@@ -10,16 +10,14 @@ export class WaxUser extends User {
     private readonly wax: WaxJS;
     private readonly chain: Chain;
 
-    private readonly api: any;
-    private readonly rpc: any;
+    public api: any;
+    public rpc: any;
 
-    constructor(chain: Chain, wax: WaxJS) {
+    constructor(chain: Chain, userAccount: string, pubKeys: string[], wax: WaxJS) {
         super();
 
-        // @ts-ignore
-        this.accountName = wax.userAccount;
-        // @ts-ignore
-        this.pubKeys = wax.pubKeys;
+        this.accountName = userAccount;
+        this.pubKeys = pubKeys;
         this.requestPermission = 'active';
 
         this.chain = chain;
@@ -27,7 +25,7 @@ export class WaxUser extends User {
 
         // compatible features
         this.api = wax.api;
-        this.rpc = wax.api.rpc;
+        this.rpc = wax.api && wax.api.rpc;
     }
 
     /**
@@ -36,6 +34,15 @@ export class WaxUser extends User {
      */
     async signTransaction(transaction: any, options: any): Promise<SignTransactionResponse> {
         try {
+            const account = await this.wax.login();
+
+            if (account !== this.accountName) {
+                throw new Error('Account does not match the requested permission');
+            } else {
+                this.api = this.wax.api;
+                this.rpc = this.wax.api.rpc;
+            }
+
             const completedTransaction = await this.wax.api.transact(transaction, options);
 
             return this.returnEosjsTransaction(options.broadcast !== false, completedTransaction);

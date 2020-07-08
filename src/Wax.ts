@@ -1,10 +1,11 @@
 import { Authenticator, Chain, User, UALError } from 'universal-authenticator-library'
+import {UALErrorType} from "universal-authenticator-library/dist";
+import {SignatureProvider} from "eosjs/dist/eosjs-api-interfaces";
 import { WaxJS } from "@waxio/waxjs/dist"
 
 import { WaxUser } from "./WaxUser";
 import { WaxIcon } from './WaxIcon';
 import {UALWaxError} from "./UALWaxError";
-import {UALErrorType} from "universal-authenticator-library/dist";
 
 export class Wax extends Authenticator {
     private wax?: WaxJS;
@@ -12,8 +13,14 @@ export class Wax extends Authenticator {
 
     private initiated = false;
 
-    constructor(chains: Chain[], options?: any) {
+    private session?: {userAccount: string, pubKeys: string[]};
+
+    private readonly apiSigner?: SignatureProvider;
+
+    constructor(chains: Chain[], options?: {apiSigner?: SignatureProvider}) {
         super(chains, options);
+
+        this.apiSigner = options && options.apiSigner;
     }
 
     /**
@@ -23,7 +30,17 @@ export class Wax extends Authenticator {
         this.initWaxJS();
 
         try {
-            this.wax && await this.wax.isAutoLoginAvailable();
+            if (this.wax) {
+                if (await this.wax.isAutoLoginAvailable()) {
+                    this.receiveLogin();
+                } else {
+                    const data = JSON.parse(localStorage.getItem('ual-wax:autologin') || 'null');
+
+                    if (data && data.expire >= Date.now()) {
+                        this.receiveLogin(data.userAccount, data.pubKeys);
+                    }
+                }
+            }
         } catch (e) {
             console.log('UAL-WAX: autologin error', e);
         }
@@ -41,6 +58,7 @@ export class Wax extends Authenticator {
         this.wax = undefined;
         this.users = [];
         this.initiated = false;
+        this.session = undefined;
     }
 
 
@@ -146,13 +164,22 @@ export class Wax extends Authenticator {
         }
 
         try {
-            await this.wax.login();
+            if (!this.session) {
+                await this.wax.login();
+                this.receiveLogin();
+            }
 
-            this.users = [new WaxUser(this.chains[0], this.wax)]
+            if (!this.session) {
+                throw new Error('Could not receive login information');
+            }
+
+            this.users = [
+                new WaxUser(this.chains[0], this.session.userAccount, this.session.pubKeys, this.wax)
+            ];
 
             console.log(`UAL-WAX: login`, this.users);
 
-            return this.users
+            return this.users;
         } catch (e) {
             throw new UALWaxError(
                 e.message ? e.message : 'Could not login to the WAX Cloud Wallet',
@@ -168,6 +195,9 @@ export class Wax extends Authenticator {
     async logout(): Promise<void> {
         this.initWaxJS();
         this.users = [];
+        this.session = undefined;
+
+        localStorage.setItem('ual-wax:autologin', 'null');
 
         console.log(`UAL-WAX: logout`);
     }
@@ -187,8 +217,32 @@ export class Wax extends Authenticator {
       return 'wax';
     }
 
+    private receiveLogin(userAccount?: string, pubKeys?: string[]) {
+        if (!this.wax) {
+            return;
+        }
+
+        const login = {
+            // @ts-ignore
+            userAccount: userAccount || this.wax.userAccount,
+            // @ts-ignore
+            pubKeys: pubKeys || this.wax.pubKeys,
+            expire: Date.now() + this.shouldInvalidateAfter() * 1000
+        };
+
+        if (!login.userAccount || !login.pubKeys) {
+            return;
+        }
+
+        localStorage.setItem('ual-wax:autologin', JSON.stringify(login));
+        this.session = login;
+    }
+
     private initWaxJS() {
-        const endpoint = `${this.chains[0].rpcEndpoints[0].protocol}://${this.chains[0].rpcEndpoints[0].host}:${this.chains[0].rpcEndpoints[0].port}`;
-        this.wax = new WaxJS(endpoint, undefined, undefined, false);
+        this.wax = new WaxJS(this.getEndpoint(), undefined, undefined, false, this.apiSigner);
+    }
+
+    private getEndpoint() {
+        return `${this.chains[0].rpcEndpoints[0].protocol}://${this.chains[0].rpcEndpoints[0].host}:${this.chains[0].rpcEndpoints[0].port}`;
     }
 }
