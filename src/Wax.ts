@@ -58,6 +58,7 @@ export class Wax extends Authenticator {
         this.wax = undefined;
         this.users = [];
         this.initiated = false;
+        this.session = undefined;
     }
 
 
@@ -163,7 +164,7 @@ export class Wax extends Authenticator {
         }
 
         try {
-            if (localStorage.getItem('UALLoggedInAuthType') !== this.getName()) {
+            if (!this.session) {
                 await this.wax.login();
                 this.receiveLogin();
             }
@@ -194,8 +195,9 @@ export class Wax extends Authenticator {
     async logout(): Promise<void> {
         this.initWaxJS();
         this.users = [];
+        this.session = undefined;
 
-        localStorage.setItem('ual-wax:autologin', 'null')
+        localStorage.setItem('ual-wax:autologin', 'null');
 
         console.log(`UAL-WAX: logout`);
     }
