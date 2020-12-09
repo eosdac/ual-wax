@@ -17,10 +17,16 @@ export class Wax extends Authenticator {
 
     private readonly apiSigner?: SignatureProvider;
 
-    constructor(chains: Chain[], options?: {apiSigner?: SignatureProvider}) {
+    private waxSigningURL: string | undefined;
+    private waxAutoSigningURL: string | undefined;
+
+    constructor(chains: Chain[], options?: {apiSigner?: SignatureProvider, waxSigningURL?: string | undefined, waxAutoSigningURL?: string | undefined}) {
         super(chains, options);
 
         this.apiSigner = options && options.apiSigner;
+
+        this.waxSigningURL = options && options.waxSigningURL;
+        this.waxAutoSigningURL = options && options.waxAutoSigningURL;
     }
 
     /**
@@ -239,7 +245,7 @@ export class Wax extends Authenticator {
     }
 
     private initWaxJS() {
-        this.wax = new WaxJS(this.getEndpoint(), undefined, undefined, false, this.apiSigner);
+        this.wax = new WaxJS(this.getEndpoint(), undefined, undefined, false, this.apiSigner, this.waxSigningURL, this.waxAutoSigningURL);
     }
 
     private getEndpoint() {
