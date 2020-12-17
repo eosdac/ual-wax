@@ -160,7 +160,7 @@ export class Wax extends Authenticator {
         // Commented for now to support multiple wax chains such as testnets/staging in the future
         // Mainnet check:  this.chains[0].chainId !== '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4'
         if (this.chains.length > 1) {
-            throw new UALWaxError('WAX Could Wallet only supports the WAX Mainnet',
+            throw new UALWaxError('WAX Could Wallet only supports one WAX chain',
                 UALErrorType.Unsupported, null
             )
         }
