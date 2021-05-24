@@ -30,10 +30,10 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
-"@waxio/waxjs@^0.0.14":
-  version "0.0.14"
-  resolved "https://registry.yarnpkg.com/@waxio/waxjs/-/waxjs-0.0.14.tgz#905c6fe2e5219c870dfda6c030eb3bbffc7bdb63"
-  integrity sha512-tLpuyfQVoZQ7CUxeh8P/wooF3O6wPRLIW1Q8Ck5mqiFPJ6t4PxOkzW4bKBQLMvQEwzuyc/f0kWehl0ZKdX3Hcw==
+"@waxio/waxjs@^0.0.15":
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/@waxio/waxjs/-/waxjs-0.0.15.tgz#08bc7bd87037e49d63108a8196c853707baee0c5"
+  integrity sha512-EaXTdgbAmw3I2zfR1EfKMJ/N6jAQ8cf9QS2uAhT7aW4w1DJTYBttkx7lFb5x09Z2gKaTxBAEpSZRb1GZEpNqyA==
   dependencies:
     eosjs "^20.0.0"
 
