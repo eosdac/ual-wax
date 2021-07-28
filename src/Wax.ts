@@ -17,8 +17,8 @@ export class Wax extends Authenticator {
 
     private readonly apiSigner?: SignatureProvider;
 
-    private waxSigningURL: string | undefined;
-    private waxAutoSigningURL: string | undefined;
+    private readonly waxSigningURL: string | undefined;
+    private readonly waxAutoSigningURL: string | undefined;
 
     constructor(chains: Chain[], options?: {apiSigner?: SignatureProvider, waxSigningURL?: string | undefined, waxAutoSigningURL?: string | undefined}) {
         super(chains, options);
@@ -247,7 +247,20 @@ export class Wax extends Authenticator {
     }
 
     private initWaxJS() {
-        this.wax = new WaxJS(this.getEndpoint(), undefined, undefined, false, this.apiSigner, this.waxSigningURL, this.waxAutoSigningURL);
+        const options = {
+            rpcEndpoint: this.getEndpoint(),
+            tryAutoLogin: false
+        };
+
+        // @ts-ignore
+        if (this.apiSigner) options.apiSigner = this.apiSigner;
+        // @ts-ignore
+        if (this.waxSigningURL) options.waxSigningURL = this.waxSigningURL;
+        // @ts-ignore
+        if (this.waxAutoSigningURL) options.waxAutoSigningURL = this.waxAutoSigningURL;
+
+        // @ts-ignore
+        this.wax = new WaxJS(options);
     }
 
     private getEndpoint() {
