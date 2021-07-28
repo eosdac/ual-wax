@@ -247,20 +247,13 @@ export class Wax extends Authenticator {
     }
 
     private initWaxJS() {
-        const options = {
+        this.wax = new WaxJS({
             rpcEndpoint: this.getEndpoint(),
-            tryAutoLogin: false
-        };
-
-        // @ts-ignore
-        if (this.apiSigner) options.apiSigner = this.apiSigner;
-        // @ts-ignore
-        if (this.waxSigningURL) options.waxSigningURL = this.waxSigningURL;
-        // @ts-ignore
-        if (this.waxAutoSigningURL) options.waxAutoSigningURL = this.waxAutoSigningURL;
-
-        // @ts-ignore
-        this.wax = new WaxJS(options);
+            tryAutoLogin: false,
+            apiSigner: this.apiSigner,
+            waxSigningURL: this.waxSigningURL,
+            waxAutoSigningURL: this.waxAutoSigningURL
+        });
     }
 
     private getEndpoint() {
