@@ -1,6 +1,6 @@
 {
   "name": "@eosdacio/ual-wax",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "url": "https://eosdac.io/"
   },
   "dependencies": {
-    "@waxio/waxjs": "^0.0.15",
+    "@waxio/waxjs": "^1.0.1",
     "universal-authenticator-library": "^0.3.0",
     "eosjs": "^20.0.3"
   },
