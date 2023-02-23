@@ -13,18 +13,24 @@ export class Wax extends Authenticator {
 
     private initiated = false;
 
-    private session?: {userAccount: string, pubKeys: string[]};
+    private session?: {userAccount: string, pubKeys: string[], isTemp: boolean};
 
     private readonly apiSigner?: SignatureProvider;
-
+    private readonly returnTempAccounts: boolean | undefined;
     private readonly waxSigningURL: string | undefined;
     private readonly waxAutoSigningURL: string | undefined;
 
-    constructor(chains: Chain[], options?: {apiSigner?: SignatureProvider, waxSigningURL?: string | undefined, waxAutoSigningURL?: string | undefined}) {
+    constructor(chains: Chain[], options?: {
+        apiSigner?: SignatureProvider,
+        returnTempAccounts?: boolean | undefined,
+        waxSigningURL?: string | undefined,
+        waxAutoSigningURL?: string | undefined
+    }) {
         super(chains, options);
 
         this.apiSigner = options && options.apiSigner;
 
+        this.returnTempAccounts = options && options.returnTempAccounts;
         this.waxSigningURL = options && options.waxSigningURL;
         this.waxAutoSigningURL = options && options.waxAutoSigningURL;
     }
@@ -43,7 +49,7 @@ export class Wax extends Authenticator {
                     const data = JSON.parse(localStorage.getItem('ual-wax:autologin') || 'null');
 
                     if (data && data.expire >= Date.now()) {
-                        this.receiveLogin(data.userAccount, data.pubKeys);
+                        this.receiveLogin(data.userAccount, data.pubKeys, data?.isTemp || false);
                     }
                 }
             }
@@ -181,9 +187,13 @@ export class Wax extends Authenticator {
                 throw new Error('Could not receive login information');
             }
 
-            this.users = [
-                new WaxUser(this.chains[0], this.session.userAccount, this.session.pubKeys, this.wax)
-            ];
+            this.users = [new WaxUser(
+              this.chains[0],
+              this.session.userAccount,
+              this.session.pubKeys,
+              this.session.isTemp,
+              this.wax
+            )];
 
             console.log(`UAL-WAX: login`, this.users);
 
@@ -225,7 +235,7 @@ export class Wax extends Authenticator {
       return 'wax';
     }
 
-    private receiveLogin(userAccount?: string, pubKeys?: string[]) {
+    private receiveLogin(userAccount?: string, pubKeys?: string[], isTemp?: boolean) {
         if (!this.wax) {
             return;
         }
@@ -235,6 +245,8 @@ export class Wax extends Authenticator {
             userAccount: userAccount || this.wax.userAccount,
             // @ts-ignore
             pubKeys: pubKeys || this.wax.pubKeys,
+            // @ts-ignore
+            isTemp: isTemp || this.wax.isTemp || false,
             expire: Date.now() + this.shouldInvalidateAfter() * 1000
         };
 
@@ -251,6 +263,7 @@ export class Wax extends Authenticator {
             rpcEndpoint: this.getEndpoint(),
             tryAutoLogin: false,
             apiSigner: this.apiSigner,
+            returnTempAccounts: this.returnTempAccounts || false,
             waxSigningURL: this.waxSigningURL,
             waxAutoSigningURL: this.waxAutoSigningURL
         });

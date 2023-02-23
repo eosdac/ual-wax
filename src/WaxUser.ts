@@ -7,18 +7,26 @@ export class WaxUser extends User {
     public readonly requestPermission: string;
 
     private readonly pubKeys: string[];
+    private readonly isTemp: boolean;
     private readonly wax: WaxJS;
     private readonly chain: Chain;
 
     public api: any;
     public rpc: any;
 
-    constructor(chain: Chain, userAccount: string, pubKeys: string[], wax: WaxJS) {
+    constructor(
+      chain: Chain,
+      userAccount: string,
+      pubKeys: string[],
+      isTemp: boolean,
+      wax: WaxJS
+    ) {
         super();
 
         this.accountName = userAccount;
-        this.pubKeys = pubKeys;
         this.requestPermission = 'active';
+        this.pubKeys = pubKeys;
+        this.isTemp = isTemp;
 
         this.chain = chain;
         this.wax = wax;
@@ -78,5 +86,9 @@ export class WaxUser extends User {
 
     async getKeys() {
         return this.pubKeys;
+    }
+
+    async getIsTemp() {
+        return this.isTemp;
     }
 }
