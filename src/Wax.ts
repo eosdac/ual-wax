@@ -113,9 +113,9 @@ export class Wax extends Authenticator {
     getStyle() {
         return {
             icon: WaxIcon,
-            text: 'WAX Cloud Wallet',
+            text: 'Cloud Wallet',
             textColor: 'white',
-            background: '#111111'
+            background: '#8551B6'
         }
     }
 
